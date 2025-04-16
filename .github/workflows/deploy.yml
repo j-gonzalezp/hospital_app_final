@@ -5,11 +5,10 @@ name: Build and Push Docker Image to GHCR & Trigger Render Deploy
 on:
   push:
     branches:
-      - main # O la rama que uses para producción
+      - main
 
 env:
   REGISTRY: ghcr.io
-  # Nombre de la imagen: ghcr.io/<owner>/<repo>/<image-name> (todo minúsculas)
   IMAGE_NAME: ${{ github.repository_owner }}/${{ github.event.repository.name }}/hospital-web-app
 
 jobs:
@@ -18,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write # Permiso para escribir en GHCR
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -29,7 +28,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Usa token automático
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -48,11 +47,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          # --- PASAR ARGUMENTOS DE BUILD ---
-          # Pasa las variables NEXT_PUBLIC_* como argumentos de build
-          # ¡IMPORTANTE! Usa tus valores reales aquí o léelos de secretos si prefieres
+          # --- LÍNEAS DE CACHÉ ELIMINADAS ---
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
+          # --- FIN LÍNEAS ELIMINADAS ---
           build-args: |
             NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
             NEXT_PUBLIC_APPWRITE_PROJECT_ID=67fe86fc0039b06db267
@@ -67,13 +65,11 @@ jobs:
             NEXT_PUBLIC_COLLECTION_ID_AVAILABILITYSLOTS=availabilityslots
             NEXT_PUBLIC_COLLECTION_ID_ARTICLES=articles
             NEXT_PUBLIC_ASSETS_BUCKET_ID=app_files
-          # --- FIN ARGUMENTOS DE BUILD ---
 
   trigger-render-deploy:
     name: Trigger Render Deployment
-    needs: build-and-push-image # Depende del build exitoso
+    needs: build-and-push-image
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy Hook
-        # Usa el secreto que creaste en GitHub con la URL del Deploy Hook de Render
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
