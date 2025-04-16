@@ -58,8 +58,7 @@ jobs:
           push: true # Indica que quieres pushear la imagen al registro
           tags: ${{ steps.meta.outputs.tags }} # Usa los tags generados (ej: latest, short-sha)
           labels: ${{ steps.meta.outputs.labels }} # Añade labels útiles (ej: repo, commit)
-          cache-from: type=gha # Habilita caché de build de Docker usando GitHub Actions Cache
-          cache-to: type=gha,mode=max
+      
 
   # --- TRABAJO OPCIONAL PERO RECOMENDADO: Trigger Render Deploy ---
   trigger-render-deploy:
