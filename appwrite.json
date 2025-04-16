@@ -1,0 +1,53 @@
+{
+    "projectId": "67fe86fc0039b06db267",
+    "projectName": "Hospital",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "databases": [
+        {
+            "$id": "67fe874f00007b6702ed",
+            "name": "Hospital",
+            "enabled": true
+        }
+    ],
+    "teams": [
+        {
+            "$id": "67fe88eb001a969f1dba",
+            "name": "admin"
+        }
+    ]
+}
