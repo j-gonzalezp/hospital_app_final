@@ -2,7 +2,7 @@
 // src/components/doctors/DoctorFilter.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react'; // Removed unused useEffect
 import Select from '@/components/common/Select';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';

@@ -2,11 +2,11 @@
 'use server'; // Marca este módulo para Server Actions
 
 // --- MODIFICACIÓN AQUÍ: Importa Query directamente desde 'appwrite' ---
-import { Models, Query, AppwriteException } from 'appwrite';
+import {  Query, AppwriteException } from 'appwrite';
 // --- FIN MODIFICACIÓN ---
 
 // --- MODIFICACIÓN AQUÍ: Elimina Query de esta importación ---
-import { databases, ID, storage, BUCKET_IDS, COLLECTION_IDS, APPWRITE_DATABASE_ID } from './appwrite';
+import { databases, ID, storage, BUCKET_IDS, COLLECTION_IDS, APPWRITE_DATABASE_ID/*, Models*/ } from './appwrite';
 // --- FIN MODIFICACIÓN ---
 import type { AppointmentDocument, AppointmentWithDetails } from '@/types/appointment.d.ts';
 
@@ -317,13 +317,14 @@ export async function getServiceById(serviceId: string): Promise<ServiceWithDeta
             specialtyName: specialtyName,
         };
 
-    } catch (error: any) {
-        if (error.code === 404) {
+    } catch (error: unknown) {
+        if ((error as { code?: number })?.code === 404) {
             console.log(`Service with ID ${serviceId} not found.`);
             return null; // Devuelve null si no se encuentra
         }
         console.error(`Failed to fetch service by ID ${serviceId}:`, error);
-        throw new Error(`Could not fetch service: ${error.message || 'Unknown error'}`);
+	    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Could not fetch service: ${errorMessage}`);
     }
 }
 
@@ -715,13 +716,14 @@ export async function getDoctorById(doctorId: string): Promise<DoctorWithDetails
             specialtyName: specialtyName,
         };
 
-    } catch (error: any) {
-        if (error.code === 404) {
+    } catch (error: unknown) {
+        if ((error as { code?: number })?.code === 404) {
             console.log(`Doctor with ID ${doctorId} not found.`);
             return null;
         }
         console.error(`Failed to fetch doctor by ID ${doctorId}:`, error);
-        throw new Error(`Could not fetch doctor: ${error.message || 'Unknown error'}`);
+		const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Could not fetch doctor: ${errorMessage}`);
     }
 }
 

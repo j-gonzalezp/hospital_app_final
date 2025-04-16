@@ -7,7 +7,8 @@ import Button from '@/components/common/Button';
 import Link from 'next/link';
 
 interface RegisterFormProps {
-    onRegister: (userData: any) => void; // El tipo de userData debe coincidir con lo que envías
+    // Define a specific type for registration data
+    onRegister: (userData: { name: string; email: string; password: string }) => void;
     loading?: boolean;
     error?: string | null; // Error proveniente de la página padre (ej: email ya existe)
 }

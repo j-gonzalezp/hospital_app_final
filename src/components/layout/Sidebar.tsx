@@ -4,9 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 // Importa iconos si los usas (ej. lucide-react)
 
-interface SidebarProps {
-  // Props para controlar visibilidad en móvil, etc.
-}
+// Use Record<string, never> to explicitly define no props for now
+type SidebarProps = Record<string, never>;
 
 const Sidebar: React.FC<SidebarProps> = () => {
   // Lógica para estado (abierto/cerrado en móvil), usuario actual, etc.

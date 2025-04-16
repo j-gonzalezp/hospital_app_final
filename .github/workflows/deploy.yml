@@ -1,0 +1,80 @@
+# .github/workflows/deploy.yml
+
+name: Build and Push Docker Image to GHCR & Trigger Render Deploy
+
+on:
+  push:
+    branches:
+      - main # Ejecuta solo en pushes a la rama main
+
+env:
+  REGISTRY: ghcr.io
+  # Formato: ghcr.io/<USUARIO_GITHUB_O_ORG>/<NOMBRE_REPO>/<NOMBRE_IMAGEN>
+  # Asegúrate de usar tu usuario/org y nombre de repo en minúsculas!
+  IMAGE_NAME: ${{ github.repository_owner }}/${{ github.event.repository.name }}/hospital-web-app
+
+jobs:
+  build-and-push-image:
+    name: Build Docker Image and Push to GHCR
+    runs-on: ubuntu-latest # Usa un runner de Linux
+
+    permissions:
+      contents: read      # Permiso para leer el repo
+      packages: write     # Permiso para escribir (push) en GHCR
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Acción para obtener el código
+
+      - name: Log in to GitHub Container Registry
+        # Usa el GITHUB_TOKEN que GitHub Actions provee automáticamente
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }} # El usuario que disparó el workflow
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automático con permisos 'packages: write'
+        # --- ALTERNATIVA SI GITHUB_TOKEN FALLA (requiere secreto GHCR_PAT) ---
+        # uses: docker/login-action@v3
+        # with:
+        #   registry: ${{ env.REGISTRY }}
+        #   username: ${{ github.actor }}
+        #   password: ${{ secrets.GHCR_PAT }} # Usa el PAT que creaste
+
+      - name: Extract metadata (tags, labels) for Docker
+        # Genera tags útiles para la imagen (latest, sha del commit)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,suffix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Usa el directorio actual (raíz del repo) como contexto
+          file: ./Dockerfile # Especifica el path al Dockerfile
+          push: true # Indica que quieres pushear la imagen al registro
+          tags: ${{ steps.meta.outputs.tags }} # Usa los tags generados (ej: latest, short-sha)
+          labels: ${{ steps.meta.outputs.labels }} # Añade labels útiles (ej: repo, commit)
+          cache-from: type=gha # Habilita caché de build de Docker usando GitHub Actions Cache
+          cache-to: type=gha,mode=max
+
+  # --- TRABAJO OPCIONAL PERO RECOMENDADO: Trigger Render Deploy ---
+  trigger-render-deploy:
+    name: Trigger Render Deployment
+    needs: build-and-push-image # Solo corre si el build/push fue exitoso
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy Hook
+        # Render provee un "Deploy Hook" único por servicio.
+        # Es una URL secreta a la que haces un POST para iniciar un despliegue.
+        # ¡DEBES GUARDAR ESTA URL COMO UN SECRETO EN GITHUB!
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        # Alternativa usando la CLI de Render (más compleja de configurar)
+        # - name: Install Render CLI
+        #   run: npm install -g @renderinc/render-cli
+        # - name: Deploy Service on Render
+        #   run: render deploy --serviceId ${{ secrets.RENDER_SERVICE_ID }} --apiKey ${{ secrets.RENDER_API_KEY }}

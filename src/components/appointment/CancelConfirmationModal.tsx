@@ -8,7 +8,12 @@ interface CancelConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  appointmentDetails: any; // Reemplaza 'any' con tipo Appointment
+  // Define a more specific type for the details shown in the modal
+  appointmentDetails: {
+    doctorName?: string;
+    date?: string;
+    time?: string;
+  } | null; // Allow null if details might not be available initially
 }
 
 const CancelConfirmationModal: React.FC<CancelConfirmationModalProps> = ({

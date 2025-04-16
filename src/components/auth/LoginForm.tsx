@@ -6,7 +6,8 @@ import Button from '@/components/common/Button';
 import Link from 'next/link';
 
 interface LoginFormProps {
-    onLogin: (credentials: any) => void; // Define el tipo de credentials
+    // Define a specific type for login credentials
+    onLogin: (credentials: { email: string; password: string }) => void;
     loading?: boolean;
     error?: string | null;
 }
@@ -46,7 +47,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading, error }) => {
         {loading ? 'Logging in...' : 'Login'}
       </Button>
        <p className="text-sm text-center text-gray-600">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="text-blue-600 hover:underline">
           Register here
         </Link>

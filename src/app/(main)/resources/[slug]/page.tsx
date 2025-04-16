@@ -10,14 +10,19 @@ import { Calendar, User } from 'lucide-react'; // Iconos
 // import remarkGfm from 'remark-gfm'; // Para tablas, etc.
 
 interface ArticleDetailPageProps {
-    params: {
-        slug: string; // Debe coincidir con el nombre de la carpeta [slug]
-    };
+    // CORRECTED: params is now expected to be a Promise for async Page components
+    params: Promise<{
+        slug: string; // The shape of the resolved params object
+    }>;
+    // Optional: If you were using searchParams, they would also need to be a Promise
+    // searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // Opcional: Generar metadatos dinámicos para SEO
 // export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
-//   const article = await getArticleBySlug(params.slug);
+//   // Need to await params here too if using this function
+//   const resolvedParams = await params;
+//   const article = await getArticleBySlug(resolvedParams.slug);
 //   if (!article) {
 //     return { title: 'Article Not Found' };
 //   }
@@ -30,11 +35,14 @@ interface ArticleDetailPageProps {
 
 
 export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
-    const { slug } = params;
+    // CORRECTED: Await the params promise before accessing its properties
+    const { slug } = await params;
     let article = null;
     let error: string | null = null;
 
     if (!slug) {
+        // This check might be redundant now as Next.js wouldn't call the page without a slug,
+        // but it doesn't hurt to keep it for robustness.
         notFound();
     }
 
@@ -111,6 +119,7 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
                     {/* Usa 'prose' de Tailwind Typography para dar estilo al HTML/Markdown */}
                     <div className="prose prose-lg max-w-none">
                         {/* OPCIÓN A: Si guardaste HTML (¡Sanitizar!) */}
+                         {/* Ensure article.content is properly sanitized server-side before passing it here */}
                          <div dangerouslySetInnerHTML={{ __html: article.content /* ¡ASEGÚRATE DE SANITIZAR ESTO ANTES! */ }} />
 
                          {/* OPCIÓN B: Si guardaste Markdown */}

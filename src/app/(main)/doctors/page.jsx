@@ -1,34 +1,28 @@
-// src/app/(main)/doctors/page.tsx
+// src/app/(main)/doctors/page.jsx
+// VERSIÓN JAVASCRIPT - SIN TIPADO ESTRICTO
+
 import React from 'react';
 import PageTitle from '@/components/common/PageTitle';
 import DoctorFilter from '@/components/doctors/DoctorFilter';
 import DoctorList from '@/components/doctors/DoctorList';
-import { getAllSpecialties, getDoctors } from '@/lib/actions';
+import { getAllSpecialties, getDoctors } from '@/lib/actions'; // Asume compatibilidad JS/TS
 import ErrorMessage from '@/components/common/ErrorMessage';
-// --- Importa los tipos necesarios ---
-import type { SpecialtyDocument } from '@/types/specialty.d.ts';
-import type { DoctorWithDetails } from '@/types/doctor.d.ts';
-// --- Fin importación de tipos ---
+// No se importan tipos como SpecialtyDocument o DoctorWithDetails
 
-interface FindDoctorPageProps {
-  searchParams?: {
-    name?: string;
-    specialty?: string; // Este será el ID de la especialidad
-  };
-}
+// No se define ni exporta FindDoctorPageProps
 
-export default async function FindDoctorPage({ searchParams }: FindDoctorPageProps) {
-  // --- Añade tipos explícitos aquí ---
-  let specialties: SpecialtyDocument[] = [];
-  let doctors: DoctorWithDetails[] = [];
-  // --- Fin tipos explícitos ---
-  let error: string | null = null;
+export default async function FindDoctorPage({ searchParams }) { // Sin tipo : FindDoctorPageProps
+  // Inicializa con arrays vacíos
+  let specialties = [];
+  let doctors = [];
+  let error = null; // Inicializa como null
 
+  // Accede a searchParams directamente (común en JS)
   const filterName = searchParams?.name;
   const filterSpecialtyId = searchParams?.specialty;
 
   try {
-    // Promise.all infiere correctamente los tipos de retorno aquí
+    // Promise.all sigue funcionando igual
     const [fetchedSpecialties, fetchedDoctors] = await Promise.all([
         getAllSpecialties(),
         getDoctors({
@@ -37,7 +31,7 @@ export default async function FindDoctorPage({ searchParams }: FindDoctorPagePro
         })
     ]);
 
-    // Asigna los resultados a las variables tipadas
+    // Asigna los resultados
     specialties = fetchedSpecialties;
     doctors = fetchedDoctors;
 
@@ -45,25 +39,27 @@ export default async function FindDoctorPage({ searchParams }: FindDoctorPagePro
          console.warn("No specialties found. Check Appwrite collection data and permissions.");
      }
 
-   } catch (err: unknown) {
+   } catch (err) { // Sin tipo : unknown
        console.error("Error loading doctors page data:", err);
-       error = err instanceof Error ? err.message : "Failed to load doctor information. Please try again later.";
-       // Asegura que sigan siendo arrays vacíos tipados en caso de error
+       // Accede a 'message' directamente
+       error = err.message || "Failed to load doctor information. Please try again later.";
+       // Asegura que sigan siendo arrays vacíos en caso de error
        specialties = [];
-      doctors = [];
+       doctors = [];
   }
 
   return (
     <div>
       <PageTitle title="Find Your Doctor" subtitle="Search by name or specialty" />
 
-      {/* Pasa las especialidades tipadas al filtro */}
+      {/* Pasa las especialidades (sin tipo explícito) al filtro */}
       <DoctorFilter specialties={specialties} />
 
-      {/* Muestra error si ocurrió durante la carga */}
+      {/* Muestra error si ocurrió */}
       {error && <ErrorMessage message={error} className="my-4" />}
 
-      {/* Muestra la lista de doctores tipada si no hubo error */}
+      {/* Muestra la lista de doctores si no hubo error */}
+      {/* DoctorList ahora recibe un array potencialmente sin tipo estricto */}
       {!error && <DoctorList doctors={doctors} isLoading={false} error={null} />}
 
        {/* Mensaje si no hay doctores y no hubo error general */}

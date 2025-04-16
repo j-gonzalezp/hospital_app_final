@@ -1,8 +1,7 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function middleware() {
   // Por ahora, solo dejamos pasar la solicitud.
   // La protección real se hará en el componente de la página protegida.
   // console.log('Middleware running for:', request.nextUrl.pathname);

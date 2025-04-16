@@ -32,7 +32,7 @@ const BookingSection: React.FC<BookingSectionProps> = ({ doctorId, onBookingSucc
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false);
     const [isBooking, setIsBooking] = useState<boolean>(false); // Estado específico para el proceso de reserva
-    const [isPending, startTransition] = useTransition(); // Para carga no bloqueante de slots
+    const [isPending] = useTransition(); // Para carga no bloqueante de slots (startTransition removed as unused)
 
     // Función para cargar slots (envuelta en useCallback)
     const loadSlots = useCallback(async (date: string) => {
@@ -46,9 +46,10 @@ const BookingSection: React.FC<BookingSectionProps> = ({ doctorId, onBookingSucc
         try {
             const slots = await getAvailableSlots(doctorId, date);
             setAvailableSlots(slots);
-        } catch (err: any) {
+        } catch (err: unknown) { // Use unknown for better type safety
             console.error("Error loading slots:", err);
-            setError(err.message || "Could not load available slots for this date.");
+            const errorMessage = err instanceof Error ? err.message : "Could not load available slots for this date.";
+            setError(errorMessage);
         } finally {
              setIsLoadingSlots(false); // Termina carga
         }
@@ -124,10 +125,11 @@ const BookingSection: React.FC<BookingSectionProps> = ({ doctorId, onBookingSucc
                 // Recargar slots es crucial si falla porque el slot fue tomado
                 loadSlots(selectedDate);
             }
-        } catch (bookingError: any) {
+        } catch (bookingError: unknown) { // Use unknown for better type safety
             // Error inesperado al llamar/ejecutar la action
             console.error("Error calling createAppointment action:", bookingError);
-            setError(bookingError.message || "An unexpected error occurred while booking.");
+            const errorMessage = bookingError instanceof Error ? bookingError.message : "An unexpected error occurred while booking.";
+            setError(errorMessage);
             // Recargar slots también puede ser útil aquí
             loadSlots(selectedDate);
         } finally {

@@ -1,8 +1,9 @@
 import React from 'react';
 import ServiceCard from './ServiceCard';
+import { ServiceDocument } from '@/types/service';
 
 interface ServiceListProps {
-  services: any[]; // Reemplaza con tipo Service[] o Specialty[]
+  services: ServiceDocument[]; // Reemplaza con tipo Service[] o Specialty[]
 }
 
 const ServiceList: React.FC<ServiceListProps> = ({ services }) => {
@@ -12,7 +13,8 @@ const ServiceList: React.FC<ServiceListProps> = ({ services }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {services.map((service) => (
-        <ServiceCard key={service.id} service={service} />
+        // Use $id for key based on Appwrite convention
+        <ServiceCard key={service.$id} service={service} />
       ))}
     </div>
   );

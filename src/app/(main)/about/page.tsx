@@ -77,12 +77,11 @@ export default function AboutPage() {
                 <div className="prose prose-lg max-w-3xl mx-auto text-[var(--text-secondary)]">
                     <p>
                         Modern Hospital began as a small community clinic with a big dream. Over the decades,
-                        we've grown alongside our community, continuously expanding our services and facilities.
-                        [Add a sentence about a key milestone]. We embraced technological advancements,
-                        [mention another milestone like a new wing or service]. Today, we stand as a pillar of
+                        we have grown alongside our community, continuously expanding our services and facilities.
+                        We embraced technological advancements. Today, we stand as a pillar of
                         health in the region, proud of our legacy and excited for the future of medicine.
                     </p>
-                    {/* Puedes añadir más párrafos o una línea de tiempo aquí */}
+                 
                 </div>
             </section>
 

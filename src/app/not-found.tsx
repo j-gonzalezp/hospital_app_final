@@ -16,7 +16,7 @@ export default function NotFound() {
         Page Not Found
       </h2>
       <p className="text-gray-600 mb-8 max-w-md"> {/* Ancho máximo para mejor lectura */}
-        Oops! The page you are looking for doesn't seem to exist. It might have been moved, deleted, or you might have mistyped the URL.
+        Oops! The page you are looking for doesn&apos;t seem to exist. It might have been moved, deleted, or you might have mistyped the URL.
       </p>
       <Link href="/" passHref legacyBehavior>
         <a>

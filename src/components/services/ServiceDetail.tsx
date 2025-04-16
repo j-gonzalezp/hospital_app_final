@@ -10,7 +10,7 @@ interface ServiceDetailProps {
 }
 
 const ServiceDetail: React.FC<ServiceDetailProps> = ({ service }) => {
- const placeholderImage = '/images/service-placeholder.png';
+  // Removed unused placeholderImage variable
 
   return (
     // El $id no se usa directamente aquí, pero el tipo es correcto
