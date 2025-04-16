@@ -5,43 +5,33 @@ name: Build and Push Docker Image to GHCR & Trigger Render Deploy
 on:
   push:
     branches:
-      - main # Ejecuta solo en pushes a la rama main
+      - main # O la rama que uses para producción
 
 env:
   REGISTRY: ghcr.io
-  # Formato: ghcr.io/<USUARIO_GITHUB_O_ORG>/<NOMBRE_REPO>/<NOMBRE_IMAGEN>
-  # Asegúrate de usar tu usuario/org y nombre de repo en minúsculas!
+  # Nombre de la imagen: ghcr.io/<owner>/<repo>/<image-name> (todo minúsculas)
   IMAGE_NAME: ${{ github.repository_owner }}/${{ github.event.repository.name }}/hospital-web-app
 
 jobs:
   build-and-push-image:
     name: Build Docker Image and Push to GHCR
-    runs-on: ubuntu-latest # Usa un runner de Linux
-
+    runs-on: ubuntu-latest
     permissions:
-      contents: read      # Permiso para leer el repo
-      packages: write     # Permiso para escribir (push) en GHCR
+      contents: read
+      packages: write # Permiso para escribir en GHCR
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Acción para obtener el código
+        uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
-        # Usa el GITHUB_TOKEN que GitHub Actions provee automáticamente
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }} # El usuario que disparó el workflow
-          password: ${{ secrets.GITHUB_TOKEN }} # Token automático con permisos 'packages: write'
-        # --- ALTERNATIVA SI GITHUB_TOKEN FALLA (requiere secreto GHCR_PAT) ---
-        # uses: docker/login-action@v3
-        # with:
-        #   registry: ${{ env.REGISTRY }}
-        #   username: ${{ github.actor }}
-        #   password: ${{ secrets.GHCR_PAT }} # Usa el PAT que creaste
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # Usa token automático
 
       - name: Extract metadata (tags, labels) for Docker
-        # Genera tags útiles para la imagen (latest, sha del commit)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -53,27 +43,37 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Usa el directorio actual (raíz del repo) como contexto
-          file: ./Dockerfile # Especifica el path al Dockerfile
-          push: true # Indica que quieres pushear la imagen al registro
-          tags: ${{ steps.meta.outputs.tags }} # Usa los tags generados (ej: latest, short-sha)
-          labels: ${{ steps.meta.outputs.labels }} # Añade labels útiles (ej: repo, commit)
-      
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # --- PASAR ARGUMENTOS DE BUILD ---
+          # Pasa las variables NEXT_PUBLIC_* como argumentos de build
+          # ¡IMPORTANTE! Usa tus valores reales aquí o léelos de secretos si prefieres
+          build-args: |
+            NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+            NEXT_PUBLIC_APPWRITE_PROJECT_ID=67fe86fc0039b06db267
+            NEXT_PUBLIC_APPWRITE_DATABASE_ID=67fe874f00007b6702ed
+            NEXT_PUBLIC_COLLECTION_ID_TESTIMONIALS=testimonials
+            NEXT_PUBLIC_COLLECTION_ID_LOCATIONS=locations
+            NEXT_PUBLIC_COLLECTION_ID_SERVICES=services
+            NEXT_PUBLIC_COLLECTION_ID_APPOINTMENTS=appointments
+            NEXT_PUBLIC_COLLECTION_ID_DOCTORS=doctors
+            NEXT_PUBLIC_COLLECTION_ID_SPECIALTIES=specialties
+            NEXT_PUBLIC_COLLECTION_ID_PATIENTINFO=Tpatientinfo
+            NEXT_PUBLIC_COLLECTION_ID_AVAILABILITYSLOTS=availabilityslots
+            NEXT_PUBLIC_COLLECTION_ID_ARTICLES=articles
+            NEXT_PUBLIC_ASSETS_BUCKET_ID=app_files
+          # --- FIN ARGUMENTOS DE BUILD ---
 
-  # --- TRABAJO OPCIONAL PERO RECOMENDADO: Trigger Render Deploy ---
   trigger-render-deploy:
     name: Trigger Render Deployment
-    needs: build-and-push-image # Solo corre si el build/push fue exitoso
+    needs: build-and-push-image # Depende del build exitoso
     runs-on: ubuntu-latest
-
     steps:
       - name: Trigger Render Deploy Hook
-        # Render provee un "Deploy Hook" único por servicio.
-        # Es una URL secreta a la que haces un POST para iniciar un despliegue.
-        # ¡DEBES GUARDAR ESTA URL COMO UN SECRETO EN GITHUB!
+        # Usa el secreto que creaste en GitHub con la URL del Deploy Hook de Render
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        # Alternativa usando la CLI de Render (más compleja de configurar)
-        # - name: Install Render CLI
-        #   run: npm install -g @renderinc/render-cli
-        # - name: Deploy Service on Render
-        #   run: render deploy --serviceId ${{ secrets.RENDER_SERVICE_ID }} --apiKey ${{ secrets.RENDER_API_KEY }}
